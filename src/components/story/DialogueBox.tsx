@@ -11,7 +11,7 @@ export function DialogueBox({
   line, persona, onAdvance, lineKey,
 }: { line: Line; persona: PersonaId; onAdvance: () => void; lineKey: string }) {
   const text = resolveText(line.text, persona)
-  const { shown, done, skip } = useTypewriter(text, line.speaker === 'narrator' ? 85 : 62)
+  const { shown, done, skip } = useTypewriter(text, line.speaker === 'narrator' ? 85 : 62, line.speaker === 'thought' ? 0.35 : 0)
 
   const press = () => { if (!done) skip(); else onAdvance() }
 

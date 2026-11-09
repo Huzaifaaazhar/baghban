@@ -177,3 +177,56 @@ src/scenarios/  kit (authoring helpers + compile) and s01…s15 (one file per si
 src/components/story/  ScenarioBrief, Aftermath, Inspector, YearInReview (+ Journal tabs: Insights, Remembered)
 scripts/simcheck.mjs   verification harness
 ```
+
+
+---
+
+# Part 3 — The verdict
+
+After the fifteenth situation comes a sixteenth chapter, **The Reckoning**: the whole family gathers for a confrontation that is
+*compiled from the household you actually produced* — who arrives resentful, who is silent, who feels neglected, who is willing to
+apologise, who refuses to compromise, and which grievances are quoted from real remembered acts. You can propose a settlement
+(a care rota, open books, quiet hours, a weekly table) or nothing, and that choice is recorded. Then comes the verdict.
+
+## How the verdict is reached
+
+Nothing counts "parent-friendly" or "child-friendly" choices. Every choice is logged as an *act* (who did what to whom, about which concern,
+in what tone, with or without a reason, an alternative or listening). The verdict engine (`src/sim/verdict.ts`, `analyse.ts`) reads that
+history together with the final simulated household — blame-weighted harm by group, unmet needs, communication, unresolved conflict,
+agreements kept or broken, scars, steadiness over time, and (for Alok) whether his gentleness was fair or avoidant.
+
+| # | Ending | Roughly means |
+| --- | --- | --- |
+| 1 | The Parents Had a Point | the children repeatedly let down reasonable, well-founded needs |
+| 2 | The Children Had a Point | the parents repeatedly imposed or dismissed legitimate independence |
+| 3 | Alok’s Approach | gentle, fair listening that held the family — or, if it avoided every hard conversation, a different evaluation of the same ending |
+| 4 | Everyone Partly Wrong | both sides carried real, unaddressed failures |
+| 5 | A Healthy Family Compromise | balance **and** consistency across the year — a single good chapter is not enough |
+
+The report shows the overall verdict and the reasons for it, parent / children / Alok analyses, the most constructive and most damaging
+decisions (with the real choice text), unresolved conflicts, relationship changes, family wellbeing, missed compromises, and ends on the question
+*“Who was really right?”*. It makes no claims about the player’s real-life personality.
+
+## Replay
+
+*Chapters* lets you revisit any chapter (the simulation is rebuilt by deterministically replaying the decision log up to it, so the household is exactly
+as it was) and play it through another perspective; *Decision history* lists every choice with the options offered; *Live the year again* and
+*Reset all progress* are in the verdict and the menu. Saves (`baghban-save-v3`) resume mid-chapter after a reload.
+
+## Sound
+
+Original synthesised layers — tanpura drone, wall clock, ceiling fan, rain, television in another room, typewriter, household sounds, birds.
+Off until the player turns it on; *Soundscape* (opening and menu) toggles each layer, or follows the scene (fan in the living room, rain during the monsoon chapters,
+typewriter in the night chapter). Inner thoughts get a short breath of silence and sentences pause at punctuation.
+
+## Tests
+
+```bash
+npm test                              # simcheck (Part 2) + verdictcheck: consequences, memory, delayed fx, relationships,
+                                      # verdict logic, save/load via replay, confrontation, different playthroughs → different endings
+node tests/e2e/journey.cjs compromise parents-first children-first alok   # Playwright, real UI, whole year
+node tests/e2e/journey.cjs compromise --viewport=mobile                    # desktop | laptop | tablet | mobile
+```
+
+The e2e predicts each choice in Node with the same engine, clicks it in the browser, reloads mid-year to test resuming, and then checks that the ending
+on screen is the one those decisions produce, that the report quotes the player’s actual choices, that chapter selection works and that there are no console errors.

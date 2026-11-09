@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { INFO } from '../../sim/data'
 import { FAMILY_LABEL } from '../../sim/report'
-import { getScenarioBody, SCENARIOS } from '../../scenarios'
+import { chapterTitle, CHAPTER_COUNT, CONFRONTATION_INDEX, getScenarioBody } from '../../scenarios'
 import type { LensKey } from '../../scenarios/kit'
 import { resolveText } from '../../engine/story'
 import { activeScene, useGame } from '../../store/gameStore'
@@ -17,18 +17,19 @@ export function Aftermath({ onInspect, onJournal }: { onInspect: () => void; onJ
   const { campaign, sim, rewind, continueCampaign, markWitness } = useGame()
   const [open, setOpen] = useState<LensKey | null>(null)
   if (!campaign.ctx || !campaign.report || !sim || !campaign.lens) return null
-  const def = SCENARIOS[campaign.index]
-  const body = getScenarioBody(campaign.index, campaign.ctx)
+  const isConf = campaign.index === CONFRONTATION_INDEX
+  const def = { n: campaign.index + 1, title: chapterTitle(campaign.index) }
+  const body = getScenarioBody(campaign.index, campaign.ctx, campaign.snapshot ?? sim)
   const r = campaign.report
-  const last = campaign.index >= SCENARIOS.length - 1
-  const others = LENS_ORDER.filter((k) => k !== campaign.lens)
+  const last = campaign.index >= CHAPTER_COUNT - 1
+  const others = isConf ? [] : LENS_ORDER.filter((k) => k !== campaign.lens)
   const who = activeScene({ campaign }).who as PersonaId
 
   return (
-    <motion.div className="absolute inset-0 z-40 overflow-y-auto bg-[#120904]/85 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-      <div className="mx-auto flex min-h-full max-w-3xl flex-col justify-center px-3 py-8">
+    <motion.div className="absolute inset-0 z-40 overflow-y-auto bg-[#120904]/92 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+      <div className="mx-auto flex min-h-full max-w-3xl flex-col justify-center px-3 pb-8 pt-20 sm:py-8">
         <div className="paper-dark rounded-md p-5 sm:p-8">
-          <p className="font-display text-sm uppercase tracking-[0.35em] text-brass">Situation {def.n} · {def.title}</p>
+          <p className="font-display text-sm uppercase tracking-[0.35em] text-brass">{isConf ? 'The last night' : `Situation ${def.n}`} · {def.title}</p>
           <h2 className="mt-1 font-display text-4xl font-semibold text-cream">What you noticed</h2>
           <p className="mt-1 text-lg italic text-beige">Nobody tells you whether it was right. You can only see what changed in the room — and what did not.</p>
           <div className="ornament-rule my-4" />
@@ -59,7 +60,7 @@ export function Aftermath({ onInspect, onJournal }: { onInspect: () => void; onJ
             </p>
           )}
 
-          <div className="mt-6">
+          {others.length > 0 && <div className="mt-6">
             <p className="font-display text-sm font-bold uppercase tracking-[0.25em] text-brass">Through other eyes</p>
             <p className="text-base italic text-beige">The same moment, seen by the others. What they knew changes what it meant.</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -92,10 +93,10 @@ export function Aftermath({ onInspect, onJournal }: { onInspect: () => void; onJ
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </div>}
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button onClick={continueCampaign} className="sm:flex-1">{last ? 'Finish the year' : 'The next situation'}</Button>
+            <Button onClick={continueCampaign} className="sm:flex-1">{last ? 'See the verdict' : campaign.index === CHAPTER_COUNT - 2 ? 'The family gathers' : 'The next situation'}</Button>
             <Button variant="ghost" onClick={rewind}>Rewind this situation</Button>
             <Button variant="ghost" onClick={onJournal}>Journal</Button>
             <Button variant="ghost" onClick={onInspect}>Inspect the household</Button>

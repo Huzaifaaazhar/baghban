@@ -55,6 +55,7 @@ export function DecisionPanel({
             <li key={o.id}>
               <motion.button
                 type="button"
+                data-option-id={o.id}
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.12 + i * 0.08 }}
                 onClick={() => onPick(o.id)}

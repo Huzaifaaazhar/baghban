@@ -92,6 +92,7 @@ export function seedFromPrologue(p: Prologue): Sim {
   s.facts.son = isSon(me) ? me : host
   s.facts.living = 'host'
   s.t = 0
+  for (const [k, b] of Object.entries(s.bonds)) s.baseline[k] = { trust: b.trust, respect: b.respect, resentment: b.resentment, heard: b.heard, distance: b.distance }
   snapshot(s, 'prologue')
   return clone(s)
 }

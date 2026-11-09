@@ -6,7 +6,7 @@ import { LOCATIONS } from '../../data/locations'
 import {
   currentLine, linesForCursor, nodeCast, resolveText, visibleOptions,
 } from '../../engine/story'
-import { SCENARIOS } from '../../scenarios'
+import { chapterTitle, CONFRONTATION_INDEX } from '../../scenarios'
 import { makeQ } from '../../sim/engine'
 import { activeScene, activeWho, useGame } from '../../store/gameStore'
 import type { CharacterId, LocationId } from '../../types'
@@ -19,12 +19,14 @@ import { DecisionPanel } from '../story/DecisionPanel'
 import { DialogueBox } from '../story/DialogueBox'
 import { ExplorePanel } from '../story/ExplorePanel'
 import { HouseMap } from '../story/HouseMap'
+import { Chapters } from '../story/Chapters'
+import { DecisionHistory } from '../story/DecisionHistory'
 import { Inspector } from '../story/Inspector'
 import { Journal } from '../story/Journal'
 import { LocationCard } from '../story/LocationCard'
 import { PauseMenu } from '../story/PauseMenu'
 import { ScenarioBrief } from '../story/ScenarioBrief'
-import { YearInReview } from '../story/YearInReview'
+import { VerdictReport } from '../story/VerdictReport'
 import { IconBook, IconHouse, IconMenu, IconMute, IconSound } from '../ui/Icons'
 import { IconButton } from '../ui/Button'
 
@@ -35,6 +37,8 @@ export function Play() {
   const [menu, setMenu] = useState(false)
   const [map, setMap] = useState(false)
   const [inspect, setInspect] = useState(false)
+  const [chapters, setChapters] = useState(false)
+  const [history, setHistory] = useState(false)
   const [closing, setClosing] = useState(false)
   const [observation, setObservation] = useState<Hotspot | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -84,8 +88,8 @@ export function Play() {
   const here: LocationId = explore ? location : node.location
   const brief = campaign.stage === 'brief'
   const finale = campaign.stage === 'finale'
-  const stageHidden = journal || menu || map || closing || inspect
-  const title = finale ? 'A year at Verma Sadan' : inCampaign ? `${campaign.index + 1}. ${SCENARIOS[Math.min(campaign.index, SCENARIOS.length - 1)].title}` : LOCATIONS[here].name
+  const stageHidden = journal || menu || map || closing || inspect || chapters || history
+  const title = finale ? 'A year at Verma Sadan' : inCampaign ? `${campaign.index + 1}. ${chapterTitle(Math.min(campaign.index, CONFRONTATION_INDEX))}` : LOCATIONS[here].name
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-night">
@@ -101,7 +105,7 @@ export function Play() {
       {!brief && !finale && <LocationCard location={here} time={time} />}
 
       {brief && <ScenarioBrief />}
-      {finale && <YearInReview onInspect={() => setInspect(true)} onJournal={() => setJournal(true)} />}
+      {finale && <VerdictReport onInspect={() => setInspect(true)} onJournal={() => setJournal(true)} onChapters={() => setChapters(true)} onHistory={() => setHistory(true)} />}
 
       {/* top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-[45] flex items-center justify-between gap-2 bg-gradient-to-b from-black/70 to-transparent p-3 sm:p-5">
@@ -186,9 +190,11 @@ export function Play() {
       {campaign.stage === 'aftermath' && !stageHidden && <Aftermath onInspect={() => setInspect(true)} onJournal={() => setJournal(true)} />}
 
       <Journal open={journal} onClose={() => setJournal(false)} />
-      <PauseMenu open={menu} onClose={() => setMenu(false)} onJournal={() => setJournal(true)} onInspect={() => setInspect(true)} />
+      <PauseMenu open={menu} onClose={() => setMenu(false)} onJournal={() => setJournal(true)} onInspect={() => setInspect(true)} onChapters={() => setChapters(true)} onHistory={() => setHistory(true)} />
       <HouseMap open={map} onClose={() => setMap(false)} onGo={g.travel} />
       <Inspector open={inspect} onClose={() => setInspect(false)} />
+      <Chapters open={chapters} onClose={() => setChapters(false)} />
+      <DecisionHistory open={history} onClose={() => setHistory(false)} />
       <span className="sr-only" aria-live="polite">{line ? resolveText(line.text, who) : ''}</span>
     </div>
   )

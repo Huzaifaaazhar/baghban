@@ -136,6 +136,36 @@ export interface Pending {
   fired?: boolean
 }
 
+export type Lens = 'parent' | 'child' | 'alok'
+
+/** One thing a character did as part of a decision, with how it was appraised. */
+export interface LogAct {
+  by: CharacterId; to: CharacterId; k: ActKind; c?: Concern; tone?: Tone
+  why?: boolean; alt?: boolean; hear?: boolean; pub?: boolean
+  n: string; felt: number; warm: number; blame: number
+}
+export interface LogOffered { id: string; label: string; style: 'soft' | 'hard' | 'avoid' | 'other' }
+/** Every decision the player makes is recorded — the verdict, history and replay are all derived from this. */
+export interface LogEntry {
+  /** Chapter index (0-based; 15 is the confrontation). */
+  i: number
+  sid: string
+  title: string
+  nodeId: string
+  lens: Lens
+  who: CharacterId
+  optionId: string
+  label: string
+  style: LogOffered['style']
+  acts: LogAct[]
+  offered: LogOffered[]
+  /** Notices looked at before deciding. */
+  looked: string[]
+  /** Family composite before/after this decision. */
+  delta: number
+  memIds: string[]
+}
+
 export interface FamilySnapshot { t: number; scenario: string; fam: Record<FamilyAttr, number> }
 
 export interface Sim {
@@ -157,6 +187,14 @@ export interface Sim {
   facts: Record<string, string | number | boolean>
   comm: number
   history: FamilySnapshot[]
+  /** Every decision made, in order. */
+  log: LogEntry[]
+  /** Notices viewed since the last decision. */
+  look: string[]
+  /** Which other perspectives were read after each chapter. */
+  reads: { i: number; lens: Lens }[]
+  /** Bonds as the year began, for before/after comparison. */
+  baseline: Record<string, { trust: number; respect: number; resentment: number; heard: number; distance: number }>
 }
 
 /** Read-only query facade handed to scenario conditions. */

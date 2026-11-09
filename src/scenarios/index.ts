@@ -2,6 +2,7 @@ import type { CharacterId, StoryScene } from '../types'
 import { SPOUSE_OF } from '../sim/seed'
 import type { Sim } from '../sim/types'
 import { compile, type Ctx, type LensKey, type ScenarioBody, type ScenarioDef } from './kit'
+import { compileConfrontation, confrontationBody } from './confrontation'
 import { S01 } from './s01'
 import { S02 } from './s02'
 import { S03 } from './s03'
@@ -30,13 +31,35 @@ export function ctxFromSim(sim: Sim): Ctx {
   return { persona, H, HW: SPOUSE_OF[H]!, S, SW: SPOUSE_OF[S]!, carer, living: String(sim.facts.living ?? 'host') }
 }
 
+/** The confrontation is chapter index 15 — one past the fifteen authored situations. */
+export const CONFRONTATION_INDEX = SCENARIOS.length
+export const CHAPTER_COUNT = SCENARIOS.length + 1
+export const chapterTitle = (i: number) => (i === CONFRONTATION_INDEX ? 'The Reckoning' : SCENARIOS[i]?.title ?? '')
+export const chapterMonth = (i: number) => (i === CONFRONTATION_INDEX ? 'Diwali' : SCENARIOS[i]?.month ?? '')
+
 const cache = new Map<string, StoryScene>()
-export function getScenarioScene(index: number, ctx: Ctx, lens: LensKey): StoryScene {
+const confCache = new WeakMap<object, Map<string, StoryScene>>()
+
+/**
+ * Compile a chapter for one perspective. The confrontation is built from the household's state when the
+ * chapter begins (`snap`), so it reflects what actually happened; the others depend only on the context.
+ */
+export function getScenarioScene(index: number, ctx: Ctx, lens: LensKey, snap?: Sim): StoryScene {
+  if (index === CONFRONTATION_INDEX) {
+    if (!snap) throw new Error('the confrontation needs the household state')
+    let m = confCache.get(snap)
+    if (!m) { m = new Map(); confCache.set(snap, m) }
+    const key = `${lens}|${JSON.stringify(ctx)}`
+    let sc = m.get(key)
+    if (!sc) { sc = compileConfrontation(snap, ctx, lens); m.set(key, sc) }
+    return sc
+  }
   const key = `${index}|${lens}|${JSON.stringify(ctx)}`
   let s = cache.get(key)
   if (!s) { s = compile(SCENARIOS[index], ctx, lens); cache.set(key, s) }
   return s
 }
-export function getScenarioBody(index: number, ctx: Ctx): ScenarioBody {
+export function getScenarioBody(index: number, ctx: Ctx, snap?: Sim): ScenarioBody {
+  if (index === CONFRONTATION_INDEX) return confrontationBody(snap!, ctx)
   return SCENARIOS[index].build(ctx)
 }

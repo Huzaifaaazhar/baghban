@@ -4,6 +4,9 @@ import { useGame } from '../../store/gameStore'
 import { SceneBackdrop } from '../art/SceneBackdrop'
 import { Button } from '../ui/Button'
 import { SoundControl } from '../ui/SoundControl'
+import { SoundPanel } from '../ui/SoundPanel'
+import { Modal } from '../ui/Modal'
+import { useState } from 'react'
 
 const rise = (delay: number) => ({
   initial: { opacity: 0, y: 18 },
@@ -17,6 +20,7 @@ export function Opening() {
   const sceneComplete = useGame((s) => s.sceneComplete)
   const campaign = useGame((s) => s.campaign)
   const hasSave = !!persona
+  const [soundOpen, setSoundOpen] = useState(false)
 
   return (
     <div className="absolute inset-0">
@@ -24,7 +28,7 @@ export function Opening() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/75" aria-hidden />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(34,14,4,0.62),transparent_68%)]" aria-hidden />
       <div className="absolute inset-x-0 top-0 z-20 flex justify-end p-3 sm:p-6">
-        <motion.div {...rise(2.4)}><SoundControl /></motion.div>
+        <motion.div {...rise(2.4)} className="flex items-center gap-2"><SoundControl /><button onClick={() => setSoundOpen(true)} className="rounded-full border border-brass/40 bg-black/35 px-3 py-2 font-display text-sm font-bold uppercase tracking-[0.18em] text-cream backdrop-blur-sm transition hover:border-glow hover:text-glow" aria-label="Open the soundscape">Soundscape</button></motion.div>
       </div>
 
       {/* cinematic letterbox */}
@@ -53,7 +57,7 @@ export function Opening() {
           {hasSave && (
             <Button variant="ghost" onClick={() => goTo('play')} className="w-full">
               Continue as {CHARACTERS[persona!].name}
-              {campaign.stage === 'finale' ? ' · the year is complete' : campaign.stage !== 'off' ? ` · situation ${campaign.index + 1} of 15` : sceneComplete ? ' · prologue complete' : ''}
+              {campaign.stage === 'finale' ? ' · the verdict awaits' : campaign.stage !== 'off' ? (campaign.index >= 15 ? ' · the family gathers' : ` · situation ${campaign.index + 1} of 15`) : sceneComplete ? ' · prologue complete' : ''}
             </Button>
           )}
         </motion.div>
@@ -61,6 +65,7 @@ export function Opening() {
           A 2D story of one house, three generations, and the question nobody can answer alone
         </motion.p>
       </main>
+      <Modal open={soundOpen} onClose={() => setSoundOpen(false)} label="Soundscape"><div className="p-5 sm:p-7"><h2 className="font-display text-3xl font-semibold text-cream">The sound of the house</h2><p className="mb-3 italic text-beige">Original, synthesised sound — nothing sampled. Off until you turn it on.</p><SoundPanel /></div></Modal>
     </div>
   )
 }

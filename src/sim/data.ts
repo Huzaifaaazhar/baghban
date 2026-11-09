@@ -141,5 +141,9 @@ export function newSim(): Sim {
     facts: {},
     comm: 0,
     history: [],
+    log: [],
+    look: [],
+    reads: [],
+    baseline: {},
   }
 }

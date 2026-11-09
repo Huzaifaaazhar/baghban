@@ -6,11 +6,13 @@ import type {
 import { SUNDAY_CHAI } from '../data/scenes/sundayChai'
 import { advance, choose, resolveText, visibleOptions } from '../engine/story'
 import { roleOfPersona } from '../data/roles'
-import { ctxFromSim, getScenarioScene, SCENARIOS } from '../scenarios'
+import { chapterTitle, CHAPTER_COUNT, CONFRONTATION_INDEX, ctxFromSim, getScenarioScene, SCENARIOS } from '../scenarios'
 import type { Ctx, LensKey } from '../scenarios/kit'
 import { applyFx, clone, firePending, makeQ, snapshot, tick, type Echo } from '../sim/engine'
 import { buildReport, type Report } from '../sim/report'
 import { applyNotice, enterNode, resolveOption } from '../sim/runtime'
+import { LAYERS, type Layer } from '../audio/ambient'
+import { replayCampaign } from '../sim/replay'
 import { seedFromPrologue } from '../sim/seed'
 import type { Sim } from '../sim/types'
 
@@ -46,6 +48,10 @@ interface GameState {
   phase: Phase
   soundOn: boolean
   volume: number
+  /** Let the room and the season decide which sounds play. */
+  soundAuto: boolean
+  /** Which kinds of sound are allowed at all. */
+  soundMix: Record<Layer, boolean>
   role: RoleId | null
   persona: PersonaId | null
   mode: Mode
@@ -66,6 +72,8 @@ interface GameState {
   goTo: (phase: Phase) => void
   setSound: (on: boolean) => void
   setVolume: (v: number) => void
+  setSoundAuto: (on: boolean) => void
+  setLayer: (layer: Layer, on: boolean) => void
   pickRole: (role: RoleId) => void
   beginStory: (persona: PersonaId) => void
   next: () => void
@@ -80,6 +88,10 @@ interface GameState {
   markWitness: (lens: LensKey, learn: string[]) => void
   rewind: () => void
   continueCampaign: () => void
+  /** Return to the start of chapter `index` (0-based) by replaying the recorded decisions. */
+  jumpToChapter: (index: number) => void
+  /** Erase everything — progress, perspective, saved decisions. */
+  resetProgress: () => void
 }
 
 const freshProgress = () => ({
@@ -99,7 +111,7 @@ const freshProgress = () => ({
 /** Which scene the cursor currently refers to. */
 export function activeScene(s: Pick<GameState, 'campaign'>): StoryScene {
   const c = s.campaign
-  if ((c.stage === 'scene' || c.stage === 'aftermath') && c.lens && c.ctx) return getScenarioScene(c.index, c.ctx, c.lens)
+  if ((c.stage === 'scene' || c.stage === 'aftermath') && c.lens && c.ctx) return getScenarioScene(c.index, c.ctx, c.lens, c.snapshot ?? undefined)
   return PROLOGUE
 }
 /** The character whose eyes the player is looking through right now. */
@@ -114,6 +126,8 @@ export const useGame = create<GameState>()(
       phase: 'opening',
       soundOn: false,
       volume: 0.5,
+      soundAuto: true,
+      soundMix: Object.fromEntries(LAYERS.map((l) => [l.id, true])) as Record<Layer, boolean>,
       role: null,
       persona: null,
       ...freshProgress(),
@@ -123,6 +137,8 @@ export const useGame = create<GameState>()(
       goTo: (phase) => set({ phase }),
       setSound: (soundOn) => set({ soundOn }),
       setVolume: (volume) => set({ volume }),
+      setSoundAuto: (soundAuto) => set({ soundAuto }),
+      setLayer: (layer, on) => set((st) => ({ soundMix: { ...st.soundMix, [layer]: on } })),
       pickRole: (role) => set({ role }),
 
       beginStory: (persona) =>
@@ -166,7 +182,8 @@ export const useGame = create<GameState>()(
           const sim = clone(s.sim!)
           const opt = visibleOptions(node, who, makeQ(sim)).find((o) => o.id === optionId)
           if (!opt) return
-          const branch = resolveOption(sim, opt, scene.id)
+          const offered = visibleOptions(node, who, makeQ(sim))
+          const branch = resolveOption(sim, opt, scene.id, { i: s.campaign.index, title: chapterTitle(s.campaign.index), nodeId: node.id, lens: s.campaign.lens!, who, offered })
           const res = choose(scene, s.cursor, optionId, who, makeQ(sim))
           if (res === 'end') { set({ sim }); finishScenario(set, get); return }
           set({ sim, cursor: { ...res, branch } })
@@ -227,7 +244,7 @@ export const useGame = create<GameState>()(
         const s = get()
         const c = s.campaign
         if (!c.ctx || !s.sim) return
-        const scene = getScenarioScene(c.index, c.ctx, lens)
+        const scene = getScenarioScene(c.index, c.ctx, lens, c.snapshot ?? s.sim)
         const sim = clone(c.snapshot ?? s.sim)
         enterNode(sim, scene.nodes[scene.start], scene.id)
         set({
@@ -253,6 +270,7 @@ export const useGame = create<GameState>()(
         if (!s.sim || s.campaign.seenWitness.includes(lens)) return
         const sim = clone(s.sim)
         for (const info of learn) applyFx(sim, { t: 'insight', info }, 'witness')
+        sim.reads.push({ i: s.campaign.index, lens })
         set({ sim, campaign: { ...s.campaign, seenWitness: [...s.campaign.seenWitness, lens] } })
       },
 
@@ -274,7 +292,7 @@ export const useGame = create<GameState>()(
         tick(sim)
         const echoes = firePending(sim)
         const index = c.index + 1
-        if (index >= SCENARIOS.length) {
+        if (index >= CHAPTER_COUNT) {
           set({ sim, cursor: freshProgress().cursor, campaign: { ...c, stage: 'finale', index, echoes, report: null, lens: null } })
           return
         }
@@ -283,12 +301,28 @@ export const useGame = create<GameState>()(
           campaign: { ...c, stage: 'brief', index, ctx: ctxFromSim(sim), lens: null, echoes, snapshot: clone(sim), report: null, seenNotices: [], seenWitness: [] },
         })
       },
+
+      jumpToChapter: (index) => {
+        const s = get()
+        if (!s.persona || !s.sim) return
+        const target = Math.max(0, Math.min(index, CHAPTER_COUNT - 1))
+        const done = new Set(s.sim.log.map((e) => e.i))
+        // a chapter can be revisited if every earlier chapter has recorded decisions
+        for (let i = 0; i < target; i++) if (!done.has(i)) return
+        const { sim, echoes } = replayCampaign({ persona: s.persona, flags: s.flags, relations: s.relations, stats: s.stats }, s.sim.log, s.sim.reads, target)
+        set({
+          sim, mode: 'story', phase: 'play', cursor: freshProgress().cursor,
+          campaign: { ...freshCampaign(), stage: 'brief', index: target, ctx: ctxFromSim(sim), snapshot: clone(sim), echoes, completed: Array.from({ length: target }, (_, i) => i) },
+        })
+      },
+
+      resetProgress: () => set({ phase: 'opening', role: null, persona: null, ...freshProgress(), sim: null, campaign: freshCampaign() }),
     }),
     {
-      name: 'baghban-save-v2',
-      version: 2,
+      name: 'baghban-save-v3',
+      version: 3,
       partialize: (s) => ({
-        phase: s.phase, volume: s.volume, role: s.role, persona: s.persona,
+        phase: s.phase, volume: s.volume, soundAuto: s.soundAuto, soundMix: s.soundMix, role: s.role, persona: s.persona,
         mode: s.mode, cursor: s.cursor, location: s.location, sceneComplete: s.sceneComplete,
         stats: s.stats, relations: s.relations, flags: s.flags, learned: s.learned,
         examined: s.examined, visited: s.visited, ledger: s.ledger, sim: s.sim, campaign: s.campaign,
@@ -315,7 +349,7 @@ function finishScenario(set: (p: Partial<GameState>) => void, get: () => GameSta
   const who = activeWho(s)
   if (!s.sim || !c.snapshot || !who) return
   const sim = clone(s.sim)
-  snapshot(sim, SCENARIOS[c.index].id)
+  snapshot(sim, c.index === CONFRONTATION_INDEX ? 's16' : SCENARIOS[c.index].id)
   const report = buildReport(c.snapshot, sim, who)
   set({ sim, campaign: { ...c, stage: 'aftermath', report, completed: Array.from(new Set([...c.completed, c.index])) } })
 }

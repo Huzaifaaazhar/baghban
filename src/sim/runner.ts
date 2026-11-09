@@ -1,9 +1,9 @@
 import { advance, choose, visibleOptions } from '../engine/story'
-import { getScenarioBody, getScenarioScene } from '../scenarios'
+import { chapterTitle, getScenarioBody, getScenarioScene } from '../scenarios'
 import type { Ctx, LensKey } from '../scenarios/kit'
 import type { Cursor, Option, PersonaId } from '../types'
 import { applyNotice } from './runtime'
-import { applyFx, firePending, makeQ, snapshot, tick } from './engine'
+import { applyFx, clone, firePending, makeQ, snapshot, tick } from './engine'
 import { enterNode, resolveOption } from './runtime'
 import type { Q, Sim } from './types'
 
@@ -14,7 +14,8 @@ export type Chooser = (options: Option[], q: Q, info: { scenario: number; lens: 
  * so anything the tests prove about the simulation is true of the game.
  */
 export function runScenario(sim: Sim, index: number, ctx: Ctx, lens: LensKey, chooser: Chooser): string[] {
-  const scene = getScenarioScene(index, ctx, lens)
+  const snap = clone(sim)
+  const scene = getScenarioScene(index, ctx, lens, snap)
   const who = scene.who as PersonaId
   const picked: string[] = []
   let cursor: Cursor = { nodeId: scene.start, stage: 'lines', index: 0 }
@@ -30,7 +31,7 @@ export function runScenario(sim: Sim, index: number, ctx: Ctx, lens: LensKey, ch
       const opt = opts.find((o) => o.id === id)
       if (!opt) throw new Error(`option ${id} not offered in ${scene.id}/${lens}: [${opts.map((o) => o.id)}]`)
       picked.push(id)
-      const branch = resolveOption(sim, opt, scene.id)
+      const branch = resolveOption(sim, opt, scene.id, { i: index, title: chapterTitle(index), nodeId: node.id, lens, who, offered: opts })
       const res = choose(scene, cursor, id, who, makeQ(sim))
       if (res === 'end') return picked
       cursor = { ...res, branch }
@@ -46,8 +47,12 @@ export function runScenario(sim: Sim, index: number, ctx: Ctx, lens: LensKey, ch
 }
 
 /** Close a scenario: record a snapshot, let time pass, fire delayed consequences. */
-export function closeScenario(sim: Sim, scenarioId: string) {
+export function closeScenario(sim: Sim, scenarioId: string, index?: number, reads: { lens: LensKey; learn: string[] }[] = []) {
   snapshot(sim, scenarioId)
+  for (const r of reads) {
+    for (const info of r.learn) applyFx(sim, { t: 'insight', info }, 'witness')
+    if (index !== undefined) sim.reads.push({ i: index, lens: r.lens })
+  }
   tick(sim)
   return firePending(sim)
 }

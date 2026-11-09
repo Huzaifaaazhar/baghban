@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { CHARACTERS } from '../../data/characters'
 import { roleOfPersona } from '../../data/roles'
-import { getScenarioBody, SCENARIOS } from '../../scenarios'
+import { chapterMonth, chapterTitle, CHAPTER_COUNT, CONFRONTATION_INDEX, getScenarioBody } from '../../scenarios'
 import type { LensKey } from '../../scenarios/kit'
 import { useGame } from '../../store/gameStore'
 import { SceneBackdrop } from '../art/SceneBackdrop'
@@ -14,8 +14,9 @@ const LENS_ORDER: LensKey[] = ['parent', 'child', 'alok']
 export function ScenarioBrief() {
   const { campaign, sim, persona, chooseLens } = useGame()
   if (!campaign.ctx || !sim) return null
-  const def = SCENARIOS[campaign.index]
-  const body = getScenarioBody(campaign.index, campaign.ctx)
+  const body = getScenarioBody(campaign.index, campaign.ctx, campaign.snapshot ?? sim)
+  const isConf = campaign.index === CONFRONTATION_INDEX
+  const def = { n: campaign.index + 1, title: chapterTitle(campaign.index), month: chapterMonth(campaign.index), id: isConf ? 's16' : `s${String(campaign.index + 1).padStart(2, '0')}` }
   const mine: LensKey = persona ? (roleOfPersona(persona) as LensKey) : 'child'
   // things still remembered — what people carry into this situation
   const recalled = sim.memory
@@ -31,7 +32,7 @@ export function ScenarioBrief() {
         <div className="mx-auto flex min-h-full max-w-5xl flex-col items-center px-4 pb-12 pt-20 sm:pt-10">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }} className="text-center text-shadow-film">
             <p className="font-display text-sm uppercase tracking-[0.4em] text-brass">
-              Situation {def.n} of {SCENARIOS.length} · {def.month}
+              {isConf ? 'The last night' : `Situation ${def.n} of ${CHAPTER_COUNT - 1}`} · {def.month}
             </p>
             <h1 className="mt-1 font-display text-4xl font-semibold text-cream sm:text-6xl">{def.title}</h1>
           </motion.div>
@@ -67,9 +68,9 @@ export function ScenarioBrief() {
           </motion.section>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mt-8 text-center">
-            <p className="font-display text-sm uppercase tracking-[0.4em] text-brass">The same night, three ways</p>
+            <p className="font-display text-sm uppercase tracking-[0.4em] text-brass">{isConf ? 'The same table, three ways' : 'The same night, three ways'}</p>
             <h2 className="font-display text-3xl font-semibold text-cream">Whose eyes?</h2>
-            <p className="mx-auto mt-1 max-w-xl italic text-beige">Each person knows something the others do not. You can come back to this moment through the others’ eyes afterwards.</p>
+            <p className="mx-auto mt-1 max-w-xl italic text-beige">{isConf ? 'Everyone is here. What each of them does tonight is decided by the year you have lived.' : 'Each person knows something the others do not. You can come back to this moment through the others’ eyes afterwards.'}</p>
           </motion.div>
 
           <div className="mt-5 grid w-full gap-4 md:grid-cols-3">

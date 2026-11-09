@@ -8,7 +8,10 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "simcheck": "node scripts/simcheck.mjs"
+    "simcheck": "node scripts/simcheck.mjs",
+    "test": "node scripts/simcheck.mjs && node scripts/verdictcheck.mjs",
+    "e2e": "node tests/e2e/journey.cjs",
+    "calibrate": "node scripts/calibrate.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.3.0",

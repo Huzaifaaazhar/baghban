@@ -157,3 +157,5 @@ input[type="range"] { accent-color: #d9923b; }
 /* The closing card ignores taps for a moment so a final “continue” tap can't land on one of its buttons. */
 @keyframes unlock { to { pointer-events: auto; } }
 .closing-card { pointer-events: none; animation: unlock 0s 1.2s forwards; }
+
+input[type="checkbox"], input[type="range"] { accent-color: #d9972f; }
