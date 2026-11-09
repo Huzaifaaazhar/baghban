@@ -5,8 +5,8 @@ import { useGame } from '../../store/gameStore'
 import { Button } from '../ui/Button'
 
 export function ClosingCard({
-  onWalk, onJournal, onClose,
-}: { onWalk: () => void; onJournal: () => void; onClose: () => void }) {
+  onBegin, onWalk, onJournal, onClose,
+}: { onBegin: () => void; onWalk: () => void; onJournal: () => void; onClose: () => void }) {
   const { persona, ledger, stats, relations, goTo } = useGame()
   if (!persona) return null
   const notable = FAMILY_ORDER.filter((id) => id !== persona && Math.abs(relations[id] ?? 0) >= 6)
@@ -22,7 +22,7 @@ export function ClosingCard({
         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}
         className="closing-card paper-dark scroll-thin max-h-[94dvh] w-full max-w-2xl overflow-y-auto rounded-md p-6 text-center sm:p-9"
       >
-        <p className="font-display text-sm uppercase tracking-[0.35em] text-brass">Part 1 · Sunday Chai</p>
+        <p className="font-display text-sm uppercase tracking-[0.35em] text-brass">Prologue · Sunday Chai</p>
         <h2 className="mt-1 font-display text-4xl font-semibold text-cream sm:text-5xl">The evening ends</h2>
         <div className="ornament-rule my-4" />
         <p className="text-lg italic text-beige">
@@ -61,7 +61,10 @@ export function ClosingCard({
         )}
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button onClick={onWalk}>Walk through the house</Button>
+          <Button onClick={onBegin}>Begin the year at Verma Sadan</Button>
+        </div>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button variant="ghost" onClick={onWalk}>Walk through the house</Button>
           <Button variant="ghost" onClick={onJournal}>Open the journal</Button>
         </div>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:justify-center">

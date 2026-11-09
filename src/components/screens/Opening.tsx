@@ -15,6 +15,7 @@ export function Opening() {
   const goTo = useGame((s) => s.goTo)
   const persona = useGame((s) => s.persona)
   const sceneComplete = useGame((s) => s.sceneComplete)
+  const campaign = useGame((s) => s.campaign)
   const hasSave = !!persona
 
   return (
@@ -52,7 +53,7 @@ export function Opening() {
           {hasSave && (
             <Button variant="ghost" onClick={() => goTo('play')} className="w-full">
               Continue as {CHARACTERS[persona!].name}
-              {sceneComplete ? ' · Part 1 complete' : ''}
+              {campaign.stage === 'finale' ? ' · the year is complete' : campaign.stage !== 'off' ? ` · situation ${campaign.index + 1} of 15` : sceneComplete ? ' · prologue complete' : ''}
             </Button>
           )}
         </motion.div>

@@ -1,11 +1,17 @@
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { resolveText } from '../../engine/story'
-import type { Option, PersonaId, Localized } from '../../types'
+import { useState } from 'react'
+import type { Notice, Option, PersonaId, Localized } from '../../types'
+import { IconEye } from '../ui/Icons'
 
 export function DecisionPanel({
-  prompt, options, persona, onPick,
-}: { prompt: Localized; options: Option[]; persona: PersonaId; onPick: (id: string) => void }) {
+  prompt, options, persona, onPick, notices = [], seen = [], onNotice,
+}: {
+  prompt: Localized; options: Option[]; persona: PersonaId; onPick: (id: string) => void
+  notices?: Notice[]; seen?: string[]; onNotice?: (id: string) => void
+}) {
+  const [shown, setShown] = useState<Notice | null>(null)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const n = Number(e.key)
@@ -26,6 +32,24 @@ export function DecisionPanel({
           {resolveText(prompt, persona)}
         </p>
         <div className="ornament-rule my-2" />
+        {notices.length > 0 && (
+          <div className="mb-2.5 flex flex-wrap items-center gap-2">
+            <span className="font-display text-xs font-bold uppercase tracking-[0.22em] text-brass">Before you decide</span>
+            {notices.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => { setShown(shown?.id === n.id ? null : n); onNotice?.(n.id) }}
+                aria-expanded={shown?.id === n.id}
+                className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1 text-base transition ${seen.includes(n.id) ? 'border-brass/30 bg-black/20 text-beige' : 'border-glow/70 bg-[#4a2a17] text-cream hover:bg-[#5b3519]'}`}
+              >
+                <IconEye width={15} height={15} /> {n.kind === 'memory' ? 'Remember' : n.kind === 'ask' ? 'Ask' : 'Notice'}: {n.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {shown && (
+          <div className="paper mb-2.5 rounded-sm p-3 text-[1.08rem] italic leading-snug" role="note">{resolveText(shown.text, persona)}</div>
+        )}
         <ul className="scroll-thin -mr-1 flex flex-col gap-2.5 overflow-y-auto pr-1">
           {options.map((o, i) => (
             <li key={o.id}>

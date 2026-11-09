@@ -23,7 +23,7 @@ export function LocationCard({ location, time }: { location: LocationId; time: T
           key={location}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.9 }}
-          className="pointer-events-none absolute inset-0 z-30 grid place-items-center bg-black/35"
+          className="pointer-events-none absolute inset-0 z-[15] grid place-items-center bg-black/35"
           aria-live="polite"
         >
           <div className="text-center text-shadow-film">

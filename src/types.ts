@@ -1,4 +1,5 @@
 /* Shared domain types for the Baghban story engine. */
+import type { Act, Cond, Fx, Q } from './sim/types'
 
 export type CharacterId =
   | 'raj'
@@ -61,6 +62,8 @@ export interface Line {
   for?: (PersonaId | RoleId)[]
   /** Hide from these personas/roles. */
   notFor?: (PersonaId | RoleId)[]
+  /** Only show when the simulation says so (Part 2). */
+  when?: Cond
 }
 
 export interface Option {
@@ -70,6 +73,15 @@ export interface Option {
   hint?: Localized
   for?: (PersonaId | RoleId)[]
   notFor?: (PersonaId | RoleId)[]
+  /** Only offer this choice when the simulation says so (e.g. you know something). */
+  when?: Cond
+  /** Part 2: what this choice *does*, appraised by the simulation — never a score. */
+  act?: Act | Act[]
+  fx?: Fx[]
+  /** Neutral memory note for the journal. */
+  note?: string
+  /** Part 2: after the act is applied, the first branch whose condition holds decides how others respond (deterministic, from simulation state). */
+  branches?: Branch[]
   effects?: Effects
   ledger?: LedgerNote
   response?: Line[]
@@ -79,6 +91,23 @@ export interface Option {
 export interface Decision {
   prompt: Localized
   options: Option[]
+}
+
+export interface Branch {
+  when: Cond
+  fx?: Fx[]
+  acts?: Act[]
+  res: Line[]
+}
+
+/** Something the player can look at or remember before deciding. May reveal private information. */
+export interface Notice {
+  id: string
+  label: string
+  kind: 'look' | 'memory' | 'ask'
+  text: Localized
+  fx?: Fx[]
+  when?: Cond
 }
 
 export interface StoryNode {
@@ -92,10 +121,16 @@ export interface StoryNode {
   next?: string
   /** Final node of the scene — shows the closing card. */
   ends?: boolean
+  /** Part 2: things that happen as this node begins (acts by others, effects). */
+  onEnter?: { acts?: Act[] | ((q: Q) => Act[]); fx?: Fx[] }
+  /** Part 2: look around / remember / ask — shown beside the decision. */
+  notice?: Notice[]
 }
 
 export interface StoryScene {
   id: string
+  /** Part 2: the character the player embodies in this scenario. */
+  who?: CharacterId
   title: string
   subtitle: string
   start: string
@@ -107,6 +142,8 @@ export interface Cursor {
   stage: 'lines' | 'decision' | 'response'
   index: number
   choiceId?: string
+  /** Index of the simulation-chosen branch of the chosen option, if any. */
+  branch?: number
 }
 
 export interface LedgerEntry extends LedgerNote {

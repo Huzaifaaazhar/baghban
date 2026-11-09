@@ -8,3 +8,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Development-only handle for automated browser checks.
+if (import.meta.env.DEV) {
+  void import('./store/gameStore').then((m) => { (window as unknown as { __game: unknown }).__game = m.useGame })
+}
