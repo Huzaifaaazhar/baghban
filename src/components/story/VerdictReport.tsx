@@ -18,7 +18,7 @@ function Scale({ parents, children }: { parents: number; children: number }) {
   const right = { x: 180 + L * Math.cos(rad), y: 62 + L * Math.sin(rad) }
   const tr = 'transform 1.8s cubic-bezier(0.2,0.8,0.2,1)'
   return (
-    <svg viewBox="-40 0 440 232" className="mx-auto h-auto w-full max-w-md" role="img" aria-label="A balance scale weighing the parents' claim against the children's claim">
+    <svg viewBox="-40 0 440 232" className="mx-auto h-auto w-full max-w-md [@media(max-height:520px)]:max-w-[17rem]" role="img" aria-label="A balance scale weighing the parents' claim against the children's claim">
       <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f3c36f" /><stop offset="1" stopColor="#a8741f" /></linearGradient></defs>
       <rect x="170" y="62" width="20" height="130" rx="4" fill="#5a3520" />
       <path d="M130 200 H230 L212 188 H148Z" fill="#3a2112" />

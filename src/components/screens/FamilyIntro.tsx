@@ -98,9 +98,9 @@ function Dossier({ id, onClose, onNav }: { id: CharacterId | null; onClose: () =
               ))}
             </div>
             <div className="mt-6 flex items-center justify-between gap-3">
-              <Button variant="paper" onClick={() => onNav(-1)} className="!px-4 !py-2 !text-base"><IconBack width={18} height={18} /> Previous</Button>
-              <span className="text-sm italic text-[#6b4024]">{FAMILY_ORDER.indexOf(ch.id) + 1} of {FAMILY_ORDER.length}</span>
-              <Button variant="paper" onClick={() => onNav(1)} className="!px-4 !py-2 !text-base">Next <IconChevron width={18} height={18} /></Button>
+              <Button variant="paper" onClick={() => onNav(-1)} className="!px-3 !py-2 !text-base sm:!px-4"><IconBack width={18} height={18} /> Previous</Button>
+              <span className="hidden text-sm italic text-[#6b4024] min-[420px]:inline">{FAMILY_ORDER.indexOf(ch.id) + 1} of {FAMILY_ORDER.length}</span>
+              <Button variant="paper" onClick={() => onNav(1)} className="!px-3 !py-2 !text-base sm:!px-4">Next <IconChevron width={18} height={18} /></Button>
             </div>
           </div>
         </div>

@@ -14,13 +14,13 @@ export function ClosingCard({
     .slice(0, 4)
   return (
     <motion.div
-      className="absolute inset-0 z-40 flex items-center justify-center bg-[#120904]/80 p-3 backdrop-blur-[2px]"
+      className="absolute inset-0 z-40 flex items-center justify-center bg-[#120904]/80 p-3 pt-[72px] backdrop-blur-[2px]"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2 }}
       role="dialog" aria-label="End of the evening"
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}
-        className="closing-card paper-dark scroll-thin max-h-[94dvh] w-full max-w-2xl overflow-y-auto rounded-md p-6 text-center sm:p-9"
+        className="closing-card paper-dark scroll-thin max-h-[calc(100dvh-84px)] w-full max-w-2xl sm:max-h-[calc(100dvh-96px)] overflow-y-auto rounded-md p-6 text-center sm:p-9"
       >
         <p className="font-display text-sm uppercase tracking-[0.35em] text-brass">Prologue · Sunday Chai</p>
         <h2 className="mt-1 font-display text-4xl font-semibold text-cream sm:text-5xl">The evening ends</h2>

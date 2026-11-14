@@ -44,7 +44,7 @@ export function ExplorePanel({
           </motion.aside>
         )}
       </AnimatePresence>
-      <div className="paper-dark mx-auto max-w-4xl rounded-md px-4 pb-3 pt-3 sm:px-6">
+      <div className="paper-dark scroll-thin mx-auto max-h-[calc(100dvh-92px)] max-w-4xl overflow-y-auto rounded-md px-4 pb-3 pt-3 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="truncate font-display text-2xl font-semibold leading-tight text-cream sm:text-[1.7rem]">{loc.name}</h2>

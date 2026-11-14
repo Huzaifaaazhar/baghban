@@ -108,7 +108,7 @@ export function Play() {
       {finale && <VerdictReport onInspect={() => setInspect(true)} onJournal={() => setJournal(true)} onChapters={() => setChapters(true)} onHistory={() => setHistory(true)} />}
 
       {/* top bar */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-[45] flex items-center justify-between gap-2 bg-gradient-to-b from-black/70 to-transparent p-3 sm:p-5">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-[45] flex items-center justify-between gap-2 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-3 max-sm:pb-7 sm:from-black/70 sm:via-transparent sm:p-5">
         <div className="min-w-0">
           <p className="hidden font-display text-xl font-semibold tracking-[0.3em] text-cream text-shadow-film sm:block sm:text-2xl">BAGHBAN</p>
           <p className="truncate text-base italic text-beige/90 text-shadow-film max-sm:max-w-[48vw] sm:text-sm">

@@ -21,14 +21,14 @@ export function SoundPanel({ className = '' }: { className?: string }) {
         </div>
       </div>
       <label className="mt-3 flex cursor-pointer items-start gap-3 text-[1.02rem] text-beige">
-        <input type="checkbox" checked={soundAuto} onChange={(e) => setSoundAuto(e.target.checked)} className="mt-1.5 h-4 w-4" />
+        <input type="checkbox" checked={soundAuto} onChange={(e) => setSoundAuto(e.target.checked)} className="mt-1 h-5 w-5 shrink-0" />
         <span><span className="font-semibold text-cream">Follow the scene</span> — the room, the hour and the season decide what you hear (the fan in the living room, rain in the monsoon, the typewriter at night).</span>
       </label>
       <ul className="mt-3 grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
         {LAYERS.map((l) => (
           <li key={l.id}>
             <label className="flex cursor-pointer items-start gap-2.5 text-base text-cream" title={l.hint}>
-              <input type="checkbox" checked={soundMix[l.id]} onChange={(e) => setLayer(l.id, e.target.checked)} className="mt-1.5 h-4 w-4" />
+              <input type="checkbox" checked={soundMix[l.id]} onChange={(e) => setLayer(l.id, e.target.checked)} className="mt-1 h-5 w-5 shrink-0" />
               <span>{l.label}<span className="block text-xs italic text-beige/70">{l.hint}</span></span>
             </label>
           </li>

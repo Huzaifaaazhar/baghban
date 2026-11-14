@@ -23,14 +23,14 @@ export function LocationCard({ location, time }: { location: LocationId; time: T
           key={location}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.9 }}
-          className="pointer-events-none absolute inset-0 z-[15] grid place-items-center bg-black/35"
+          className="pointer-events-none absolute inset-0 z-[15] grid place-items-center bg-black/35 [@media(max-height:520px)]:items-start [@media(max-height:520px)]:pt-14"
           aria-live="polite"
         >
           <div className="text-center text-shadow-film">
             <p className="font-deva text-2xl text-glow/90 sm:text-3xl">{loc.hindi}</p>
-            <h2 className="mt-1 font-display text-4xl font-semibold uppercase tracking-[0.22em] text-cream sm:text-6xl">{loc.name}</h2>
-            <div className="ornament-rule mx-auto my-3 w-48" />
-            <p className="font-display text-xl italic text-beige sm:text-2xl">{TIME_LABEL[time]}</p>
+            <h2 className="mt-1 font-display text-4xl font-semibold uppercase tracking-[0.22em] text-cream sm:text-6xl [@media(max-height:520px)]:text-3xl">{loc.name}</h2>
+            <div className="ornament-rule mx-auto my-3 w-48 [@media(max-height:520px)]:hidden" />
+            <p className="font-display text-xl italic text-beige sm:text-2xl [@media(max-height:520px)]:hidden">{TIME_LABEL[time]}</p>
           </div>
         </motion.div>
       )}

@@ -36,21 +36,21 @@ export function Journal({ open, onClose }: { open: boolean; onClose: () => void 
 
   return (
     <Modal open={open} onClose={onClose} label="Journal" wide restoreFocus={false} className="!max-w-3xl">
-      <div className="flex items-center gap-4 border-b border-brass/30 px-6 pb-3 pt-5">
+      <div className="flex shrink-0 items-center gap-3 border-b border-brass/30 py-3 pl-4 pr-16 sm:gap-4 sm:px-6 sm:pb-3 sm:pt-5 sm:pr-16">
         <div className="h-16 w-14 overflow-hidden rounded-sm border border-brass/50 bg-[#c9a76b]">
           <Portrait spec={me.portrait} className="h-full w-full" blink={false} />
         </div>
         <div>
           <p className="font-display text-sm uppercase tracking-[0.25em] text-brass">The journal of</p>
-          <h2 className="font-display text-3xl font-semibold text-cream">{me.fullName}</h2>
+          <h2 className="font-display text-2xl font-semibold leading-tight text-cream sm:text-3xl">{me.fullName}</h2>
         </div>
       </div>
-      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-brass/20 px-4 pt-2">
+      <div role="tablist" className="scroll-thin flex shrink-0 gap-1 overflow-x-auto border-b border-brass/20 px-4 pt-2">
         {visibleTabs.map((t) => (
           <button
             key={t.id} role="tab" aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap rounded-t-sm px-4 py-2 font-display text-lg font-semibold tracking-wide transition ${tab === t.id ? 'bg-[#f1e3bd] text-umber' : 'text-beige hover:text-glow'}`}
+            className={`whitespace-nowrap rounded-t-sm px-3 py-2.5 sm:px-4 font-display text-lg font-semibold tracking-wide transition ${tab === t.id ? 'bg-[#f1e3bd] text-umber' : 'text-beige hover:text-glow'}`}
           >
             {t.label}
           </button>

@@ -30,14 +30,14 @@ export function Inspector({ open, onClose }: { open: boolean; onClose: () => voi
 
   return (
     <Modal open={open} onClose={onClose} label="Inspect the household" wide restoreFocus={false}>
-      <div className="border-b border-brass/30 px-6 pb-3 pt-5">
+      <div className="shrink-0 border-b border-brass/30 py-3 pl-4 pr-16 sm:px-6 sm:pb-3 sm:pt-5">
         <p className="font-display text-sm uppercase tracking-[0.3em] text-brass">Spoilers · situation {sim.t + 1}</p>
-        <h2 className="font-display text-3xl font-semibold text-cream">The household, as the simulation sees it</h2>
+        <h2 className="font-display text-2xl font-semibold leading-tight text-cream sm:text-3xl">The household, as the simulation sees it</h2>
       </div>
-      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-brass/20 px-4 pt-2">
+      <div role="tablist" className="scroll-thin flex shrink-0 gap-1 overflow-x-auto border-b border-brass/20 px-4 pt-2">
         {TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap rounded-t-sm px-4 py-2 font-display text-lg font-semibold ${tab === t.id ? 'bg-[#f1e3bd] text-umber' : 'text-beige hover:text-glow'}`}>{t.label}</button>
+            className={`whitespace-nowrap rounded-t-sm px-3 py-2.5 sm:px-4 font-display text-lg font-semibold ${tab === t.id ? 'bg-[#f1e3bd] text-umber' : 'text-beige hover:text-glow'}`}>{t.label}</button>
         ))}
       </div>
       <div className="scroll-thin min-h-0 flex-1 overflow-auto bg-[#f1e3bd] p-5 text-umber" role="tabpanel">
